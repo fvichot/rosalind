@@ -9,7 +9,7 @@ from termcolor import colored
 RC_FILE = os.path.join(os.environ['HOME'], ".rosalindrc")
 BASE_URL = 'http://rosalind.info'
 CSRF_TOKEN_RE = re.compile(r"type='hidden' name='csrfmiddlewaretoken' value='([^']+)'")
-SUCCESS_RE = re.compile(r'<span class="label label-success">Congratulations</span>')
+SUCCESS_TEXT = r'<span class="label label-success">Congratulations</span>'
 
 
 def print_step(msg):
@@ -62,8 +62,8 @@ def _send_solution(session, problem, solution):
     r = session.get(BASE_URL + '/problems/{}/'.format(problem))
     if r.status_code != 200:
         fail("Could not check for success for {} !".format(problem))
-    m = SUCCESS_RE.search(r.text)
-    return (m is not None)
+    m = r.text.find(SUCCESS_TEXT)
+    return (m != -1)
 
 
 def solve(problem, func, silent=False):
@@ -76,7 +76,7 @@ def solve(problem, func, silent=False):
     duration = time.time() - start_time
     if not silent:
         print solution
-    print_step("Took {:.2f}s".format(duration))
+    print_step("Generated solution in {:.4f}s".format(duration))
     success = _send_solution(session, problem, solution)
     if success:
         print colored("Success!", 'green', attrs=['bold'])
